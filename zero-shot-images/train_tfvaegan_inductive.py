@@ -186,7 +186,7 @@ def generate_syn_feature(generator,classes, attribute,num,netF=None,netDec=None)
         syn_feature.narrow(0, i*num, num).copy_(output.data.cpu())
         syn_label.narrow(0, i*num, num).fill_(iclass)
         ## NEW: return data directly for FSL
-        support.append(Variable(output.data.cpu()))
+        support.append(Variable(output.data))
         support_labels.append(iclass)
 
     return syn_feature, syn_label, support, support_labels
