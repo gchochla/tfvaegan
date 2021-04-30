@@ -502,3 +502,48 @@ class MatDataset:
         query = [feats[:queries_per] for feats in features]
         support = [feats[queries_per:] for feats in features]
         return (support, query, class_ids, *unseen_classes)
+
+
+def load_model(model, path):
+    """Loads model for old PyTorch version.
+
+    Args:
+        model (`nn.Module`): Net whose parameters are loaded.
+        path (`str`): path to parameters.
+    """
+    data_dict = {}
+    fin = open(path, 'r')
+    i = 0
+    odd = 1
+    prev_key = None
+    while True:
+        s = fin.readline().strip()
+        if not s:
+            break
+        if odd:
+            prev_key = s
+        else:
+            print('Iter', i)
+            val = eval(s)
+            if type(val) != type([]):
+                data_dict[prev_key] = torch.FloatTensor([eval(s)])[0]
+            else:
+                data_dict[prev_key] = torch.FloatTensor(eval(s))
+            i += 1
+        odd = (odd + 1) % 2
+
+    # Replace existing values with loaded
+    own_state = model.state_dict()
+    print('Items:', len(own_state.items()))
+    for k, v in data_dict.items():
+        if not k in own_state:
+            print('Parameter', k, 'not found in own_state!!!')
+        else:
+            try:
+                own_state[k].copy_(v)
+            except:
+                print('Key:', k)
+                print('Old:', own_state[k])
+                print('New:', v)
+                sys.exit(0)
+    print('Model loaded')
