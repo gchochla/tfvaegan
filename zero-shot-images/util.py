@@ -205,7 +205,7 @@ class MatDataset:
         else:
             attributes = matcontent['original_att'].T
 
-        self.attributes = torch.tensor(attributes, dtype=torch.float)  # pylint: disable=not-callable
+        self.attributes = torch.FloatTensor(attributes)
 
         ### get attributes ###
         ######################
