@@ -404,7 +404,7 @@ for epoch in range(0,opt.nepoch):
 
     print(
         ('[%d/%d]  Loss_D: %.4f, Loss_G: %.4f, '
-         'Wasserstein_dist: %.4f, vae_loss_seen: %.4f, clsf loss: %.4f') %
+         'Wasserstein_dist: %.4f, vae_loss_seen: %.4f, clsf loss: %.4f,') %
         (
             epoch,
             opt.nepoch,
@@ -487,13 +487,13 @@ for epoch in range(0,opt.nepoch):
         if acc > best_gzsl_acc:
             best_gzsl_acc, best_acc_seen, best_acc_unseen = acc, acc_s, acc_u
             best_epoch = epoch
-        print('GZSL: s=%.4f, u=%.4f, H=%.4f' % (acc_s * 100, acc_u * 100, acc * 100))
+        print(' s=%.4f, u=%.4f, H=%.4f' % (acc_s * 100, acc_u * 100, acc * 100))
     else:
         acc = classifier.eval_protonet(clsf, data, support, support_labels, opt.cuda)
         if acc > best_zsl_acc:
             best_zsl_acc = acc
             best_epoch = epoch
-        print('ZSL: unseen accuracy=%.4f' % (acc * 100))
+        print(' unseen accuracy=%.4f' % (acc * 100))
 
     netG.train()
     netDec.train()
