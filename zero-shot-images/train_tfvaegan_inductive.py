@@ -1,6 +1,5 @@
 #author: akshitac8
 #tf-vaegan inductive
-from __future__ import print_function
 import os
 import random
 import torch
@@ -51,6 +50,16 @@ netF = model.Feedback(opt)
 netDec = model.AttDec(opt,opt.attSize)
 clsf = classifier.PrototypicalNet(in_features=2048, out_features=2048,
                                   init_diagonal=True, hidden_layers=opt.layers)
+if opt.fsl_directory is not None:
+    state_dict = torch.load(
+        os.path.join(
+            opt.fsl_directory
+            f'fsl_{data.benchmark.lower()}_proposed_splits_'
+            f'train{"" if opt.validation else "val"}_'
+            f'{"generalized" if opt.gzsl else ""}.pt'
+        )
+    )
+    clsf.load_state_dict(state_dict)
 
 print(netE)
 print(netG)
@@ -74,6 +83,7 @@ if opt.cuda:
     netF.cuda()
     netG.cuda()
     netDec.cuda()
+    clsf.cuda()
     input_res = input_res.cuda()
     noise, input_att = noise.cuda(), input_att.cuda()
     one = one.cuda()
