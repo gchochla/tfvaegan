@@ -434,11 +434,11 @@ class MatDataset:
         for lbl in rand_labels:
             try:
                 if lbl in self.eval_unseen_labels:
-                    unseen_labels.append(lbl)
+                    unseen_labels.append(int(lbl))
                 else:
-                    labels.append(lbl)
+                    labels.append(int(lbl))
             except AttributeError:
-                unseen_labels.append(lbl)
+                unseen_labels.append(int(lbl))
 
         seen_classes = len(labels)
 
