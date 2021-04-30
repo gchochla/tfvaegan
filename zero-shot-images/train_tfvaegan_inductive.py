@@ -303,7 +303,7 @@ for epoch in range(0,opt.nepoch):
             if loop >= 1:
                 recon_x = netG(z, c=input_attv)
                 dec_out = netDec(recon_x)
-                dec_hidden_feat = netDec.getLayersOutDec()
+                dec_hidden_feat = netDec.getLayersOutDet()
                 feedback_out = netF(dec_hidden_feat)
                 recon_x = netG(z, a1=opt.a1, c=input_attv, feedback_layers=feedback_out)
             else:
@@ -374,7 +374,7 @@ for epoch in range(0,opt.nepoch):
             if loop >= 1:
                 recon_x = netG(z, c=input_attv)
                 dec_out = netDec(recon_x)
-                dec_hidden_feat = netDec.getLayersOutDec()
+                dec_hidden_feat = netDec.getLayersOutDet()
                 feedback_out = netF(dec_hidden_feat)
                 recon_x = netG(z, a1=opt.a1, c=input_attv, feedback_layers=feedback_out)
             else:
