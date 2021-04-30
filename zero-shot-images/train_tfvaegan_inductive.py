@@ -59,7 +59,6 @@ if opt.fsl_directory is not None:
     )
     print(f'Loading model from {model_path}')
     util.load_model(clsf, model_path)
-    clsf.load_state_dict(state_dict)
 
 print(netE)
 print(netG)
