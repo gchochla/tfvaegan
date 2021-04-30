@@ -402,7 +402,20 @@ for epoch in range(0,opt.nepoch):
             if opt.recons_weight > 0 and not opt.freeze_dec: # not train decoder at feedback time
                 optimizerDec.step()  # attdec
 
-    print('[%d/%d]  Loss_D: %.4f Loss_G: %.4f, Wasserstein_dist:%.4f, vae_loss_seen:%.4f'% (epoch, opt.nepoch, D_cost.data[0], G_cost.data[0], Wasserstein_D.data[0],vae_loss_seen.data[0]),end=" ")
+    print(
+        ('[%d/%d]  Loss_D: %.4f, Loss_G: %.4f, '
+         'Wasserstein_dist:%.4f, vae_loss_seen:%.4f, clsf loss') %
+        (
+            epoch,
+            opt.nepoch,
+            D_cost.data[0],
+            G_cost.data[0],
+            Wasserstein_D.data[0],
+            vae_loss_seen.data[0],
+            clsf_cost.data[0]
+        ),
+        end=" "
+    )
     netG.eval()
     netDec.eval()
     netF.eval()
@@ -411,7 +424,7 @@ for epoch in range(0,opt.nepoch):
     ## AFTER
     syn_feature, syn_label, support, support_labels = generate_syn_feature(
         netG,
-        torch.unique(data.eval_unseen_labels),  # need dataset labels to get attributes
+        torch.LongTensor(np.unique(data.eval_unseen_labels)),  # need dataset labels to get attributes
         data.attributes,
         opt.syn_num,
         netF=netF,
