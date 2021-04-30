@@ -146,7 +146,10 @@ def sample():
     ## AFTER
     batch_feature, batch_att, *_ = data(opt.batch_size // queries, queries)
     batch_feature = torch.cat(batch_feature)
-    batch_att = torch.repeat_interleave(batch_att, shot, 0)
+    interleave = []
+    for att in batch_att:
+        interleave.extend([att] * shot)
+    batch_att = torch.stack(interleave)
     ##
     input_res.copy_(batch_feature)
     input_att.copy_(batch_att)
