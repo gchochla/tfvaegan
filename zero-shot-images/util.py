@@ -274,12 +274,12 @@ class MatDataset:
             self.eval_unseen_labels = eval_unseen_labels
 
             # map actual labels to usable (sequential) labels
-            self.train_label_mapping = {label: i for i, label in
+            self.train_label_mapping = {int(label): i for i, label in
                                         enumerate(set(self.train_labels))}
-            self.eval_label_mapping = {label: i for i, label in
+            self.eval_label_mapping = {int(label): i for i, label in
                                        enumerate(set(self.eval_seen_labels))}
             self.eval_label_mapping.update({
-                label: i + len(self.eval_label_mapping) for i, label in
+                int(label): i + len(self.eval_label_mapping) for i, label in
                 enumerate(set(self.eval_unseen_labels))
             })
         else:
@@ -297,9 +297,9 @@ class MatDataset:
             self.eval_labels = eval_unseen_labels
 
             # map actual labels to usable (sequential) labels
-            self.train_label_mapping = {label: i for i, label in
+            self.train_label_mapping = {int(label): i for i, label in
                                         enumerate(set(self.train_labels))}
-            self.eval_label_mapping = {label: i for i, label in
+            self.eval_label_mapping = {int(label): i for i, label in
                                        enumerate(set(self.eval_labels))}
 
         self.generalized = generalized
