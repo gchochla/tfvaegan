@@ -48,8 +48,8 @@ netD = model.Discriminator_D1(opt)
 # Init models: Feedback module, auxillary module
 netF = model.Feedback(opt)
 netDec = model.AttDec(opt,opt.attSize)
-clsf = classifier.PrototypicalNet(in_features=2048, out_features=2048,
-                                  init_diagonal=True, hidden_layers=opt.layers)
+clsf = classifier.PrototypicalNet(in_features=opt.resSize, out_features=opt.resSize,
+                                  init_diagonal=True, hidden_layers=[opt.resSize] * opt.fsl_num_layers)
 if opt.fsl_directory is not None:
     state_dict = torch.load(
         os.path.join(

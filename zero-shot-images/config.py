@@ -51,6 +51,7 @@ parser.add_argument('--shot', type=int, default=5, help='generator shot')
 parser.add_argument('--queries', type=int, default=10, help='queries per class')
 parser.add_argument('--clsf_weight', type=float, default=100, help='weight of FSL classifier loss')
 parser.add_argument('--fsl_directory', type=str, help='directory with pretrained FSL classifiers')
+parser.add_argument('--fsl_num_layers', type=int, default=1, help='number of layers of FSL classifier')
 
 opt = parser.parse_args()
 opt.lambda2 = opt.lambda1
