@@ -58,9 +58,7 @@ if opt.fsl_directory is not None:
         f'{"_generalized" if opt.gzsl else ""}.pt'
     )
     print(f'Loading model from {model_path}')
-    state_dict = torch.load(
-        
-    )
+    state_dict = torch.load(model_path)
     clsf.load_state_dict(state_dict)
 
 print(netE)
