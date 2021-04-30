@@ -297,7 +297,7 @@ class MLP(nn.Module):
             """Function to pass to .apply()."""
             classname = mod.__class__.__name__
             if classname.find('Linear') != -1:
-                init = torch.randn_like(mod.weight) / 10
+                init = torch.randn(mod.weight.size()) / 10
                 init[range(mod.in_features), range(mod.in_features)] = 1
                 mod.weight = nn.Parameter(init, requires_grad=True)
                 if mod.bias is not None:
