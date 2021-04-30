@@ -422,9 +422,13 @@ for epoch in range(0,opt.nepoch):
     ## BEFORE
     # syn_feature, syn_label = generate_syn_feature(netG,data.unseenclasses, data.attribute, opt.syn_num,netF=netF,netDec=netDec)
     ## AFTER
+    if opt.gzsl:
+        syn_label = torch.LongTensor(np.unique(data.eval_unseen_labels))
+    else:
+        syn_label = torch.LongTensor(np.unique(data.eval_labels))
     syn_feature, syn_label, support, support_labels = generate_syn_feature(
         netG,
-        torch.LongTensor(np.unique(data.eval_unseen_labels)),  # need dataset labels to get attributes
+        syn_label,  # need dataset labels to get attributes
         data.attributes,
         opt.syn_num,
         netF=netF,

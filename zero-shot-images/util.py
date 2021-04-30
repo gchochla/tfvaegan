@@ -352,7 +352,10 @@ class MatDataset:
         """
 
         if not -len(self) <= index < len(self):
-            raise IndexError('index {} is out of bounds for size {}'.format(index, len(self)))
+            raise IndexError(
+                'index {} is out of bounds for size {}'
+                .format(index, len(self))
+            )
 
         if index < 0:
             index += len(self)
