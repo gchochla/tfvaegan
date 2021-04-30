@@ -51,13 +51,15 @@ netDec = model.AttDec(opt,opt.attSize)
 clsf = classifier.PrototypicalNet(in_features=opt.resSize, out_features=opt.resSize,
                                   init_diagonal=True, hidden_layers=[opt.resSize] * opt.fsl_num_layers)
 if opt.fsl_directory is not None:
+    model_path = os.path.join(
+        opt.fsl_directory,
+        f'fsl_{data.benchmark.lower()}_proposed_splits_'
+        f'train{"" if opt.validation else "val"}'
+        f'{"_generalized" if opt.gzsl else ""}.pt'
+    )
+    print(f'Loading model from {model_path}')
     state_dict = torch.load(
-        os.path.join(
-            opt.fsl_directory,
-            f'fsl_{data.benchmark.lower()}_proposed_splits_'
-            f'train{"" if opt.validation else "val"}_'
-            f'{"generalized" if opt.gzsl else ""}.pt'
-        )
+        
     )
     clsf.load_state_dict(state_dict)
 
