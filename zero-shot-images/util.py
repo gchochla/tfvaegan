@@ -112,7 +112,7 @@ class DATA_LOADER(object):
         batch_att = self.attribute[batch_label]
         return batch_feature, batch_att
 
-class MatDataset(torch.utils.data.Dataset):
+class MatDataset:
     """Multipurpose dataset based on the .mat files
     provided by Xian et al., 2017.
 
