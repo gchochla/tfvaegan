@@ -296,25 +296,26 @@ for epoch in range(0,opt.nepoch):
                 opt.lambda1 /= 1.1
 
             ## NEW: classifier finetuning
-            clsf.zero_grad()
-            noise.normal_(0, 1)
-            z = Variable(noise)
+            if opt.classifier_lr > 0:
+                clsf.zero_grad()
+                noise.normal_(0, 1)
+                z = Variable(noise)
 
-            if loop >= 1:
-                recon_x = netG(z, c=input_attv)
-                dec_out = netDec(recon_x)
-                dec_hidden_feat = netDec.getLayersOutDet()
-                feedback_out = netF(dec_hidden_feat)
-                recon_x = netG(z, a1=opt.a1, c=input_attv, feedback_layers=feedback_out)
-            else:
-                recon_x = netG(z, c=input_attv)
+                if loop >= 1:
+                    recon_x = netG(z, c=input_attv)
+                    dec_out = netDec(recon_x)
+                    dec_hidden_feat = netDec.getLayersOutDet()
+                    feedback_out = netF(dec_hidden_feat)
+                    recon_x = netG(z, a1=opt.a1, c=input_attv, feedback_layers=feedback_out)
+                else:
+                    recon_x = netG(z, c=input_attv)
 
-            support = [recon_x[i:i+shot] for i in range(0, recon_x.size(0), shot)]
-            query = [input_resv[i:i+queries] for i in range(0, input_resv.size(0), queries)]
-            logits = clsf(support, query)
-            clsf_cost = clsf_loss(logits)
-            clsf_cost.backward()
-            optimizerClsf.step()
+                support = [recon_x[i:i+shot] for i in range(0, recon_x.size(0), shot)]
+                query = [input_resv[i:i+queries] for i in range(0, input_resv.size(0), queries)]
+                logits = clsf(support, query)
+                clsf_cost = clsf_loss(logits)
+                clsf_cost.backward()
+                optimizerClsf.step()
             ##
 
             ############# Generator training ##############
