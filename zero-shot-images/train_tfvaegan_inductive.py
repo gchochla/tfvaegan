@@ -53,7 +53,7 @@ clsf = classifier.PrototypicalNet(in_features=2048, out_features=2048,
 if opt.fsl_directory is not None:
     state_dict = torch.load(
         os.path.join(
-            opt.fsl_directory
+            opt.fsl_directory,
             f'fsl_{data.benchmark.lower()}_proposed_splits_'
             f'train{"" if opt.validation else "val"}_'
             f'{"generalized" if opt.gzsl else ""}.pt'
@@ -198,7 +198,7 @@ optimizerG         = optim.Adam(netG.parameters(), lr=opt.lr,betas=(opt.beta1, 0
 optimizerF         = optim.Adam(netF.parameters(), lr=opt.feed_lr, betas=(opt.beta1, 0.999))
 optimizerDec       = optim.Adam(netDec.parameters(), lr=opt.dec_lr, betas=(opt.beta1, 0.999))
 ## NEW: classifier optimizer
-optimizerClsf      = optim.Adam(clsf.parameters(), lr=opt.clsf_lr, betas=(opt.beta1, 0.999))
+optimizerClsf      = optim.Adam(clsf.parameters(), lr=opt.classifier_lr, betas=(opt.beta1, 0.999))
 ##
 
 
