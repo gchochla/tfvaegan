@@ -548,3 +548,10 @@ def load_model(model, path):
                 print('New:', v)
                 sys.exit(0)
     print('Model loaded')
+
+
+def tensor_interleave(tensor, times):
+    interleave = []
+    for row in tensor:
+        interleave.extend([row] * times)
+    return torch.stack(interleave)

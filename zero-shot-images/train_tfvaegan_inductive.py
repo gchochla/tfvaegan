@@ -146,10 +146,7 @@ def sample():
     ## AFTER
     batch_feature, batch_att, *_ = data(opt.batch_size // queries, queries)
     batch_feature = torch.cat(batch_feature)
-    interleave = []
-    for att in batch_att:
-        interleave.extend([att] * queries)
-    batch_att = torch.stack(interleave)
+    batch_att = util.tensor_interleave(batch_att, queries)
     ##
     input_res.copy_(batch_feature)
     input_att.copy_(batch_att)
@@ -312,7 +309,7 @@ for epoch in range(0,opt.nepoch):
                 recon_x = netG(z, c=input_attv)
 
             support = [recon_x[i:i+shot] for i in range(0, recon_x.size(0), shot)]
-            query = [input_attv[i:i+queries] for i in range(0, input_attv.size(0), queries)]
+            query = [input_resv[i:i+queries] for i in range(0, input_resv.size(0), queries)]
             logits = clsf(support, query)
             clsf_cost = clsf_loss(logits)
             clsf_cost.backward()

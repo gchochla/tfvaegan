@@ -403,7 +403,7 @@ class PrototypicalNet(nn.Module):
         n_queries = queries.size(0)
 
         prototypes = prototypes.repeat(n_queries, 1)
-        queries = queries.repeat_interleave(way, 0)
+        queries = util.tensor_interleave(queries, way)
         # after the repeats, prototypes have way classes after way classes after ...
         # and queries have way repeats of 1st query, way repeats of 2nd query, ...
         # so initial dist vector has distance of first query to all way classes
