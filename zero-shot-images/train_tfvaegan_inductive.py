@@ -122,9 +122,9 @@ class EpisodeCrossEntropyLoss(nn.Module):
 
         loss = []
         for i, class_logits in enumerate(logits):
-            labels = i * torch.ones(class_logits.size(0),
-                                    dtype=torch.long,
-                                    device=class_logits.device)
+            labels = i * torch.LongTensor([1] * class_logits.size(0))
+            if opt.cuda:
+                labels = labels.cuda()
             loss.append(self.criterion(class_logits, labels))
 
         if self.reduction == 'mean':
