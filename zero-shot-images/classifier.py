@@ -472,7 +472,7 @@ def eval_protonet(fsl_classifier, dataset, support, labels):
 
     logits = fsl_classifier(support, query)
 
-    protonet.train()
+    fsl_classifier.train()
     dataset.train()
 
     accs = []
