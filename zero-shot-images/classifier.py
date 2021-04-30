@@ -301,7 +301,10 @@ class MLP(nn.Module):
                 init[range(mod.in_features), range(mod.in_features)] = 1
                 mod.weight = nn.Parameter(init, requires_grad=True)
                 if mod.bias is not None:
-                    mod.bias = nn.Parameter(torch.zeros_like(mod.bias), requires_grad=True)
+                    mod.bias = nn.Parameter(
+                        torch.zeros_like(mod.bias).data,
+                        requires_grad=True
+                    )
 
         self.apply(init_fn)
 
