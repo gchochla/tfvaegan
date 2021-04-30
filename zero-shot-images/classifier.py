@@ -483,7 +483,7 @@ def eval_protonet(fsl_classifier, dataset, support, labels, cuda):
 
     accs = []
     for i, class_logits in enumerate(logits):
-        preds = class_logits.data.cpu().argmax(dim=-1)
+        preds = np.argmax(class_logits.data.cpu(), -1)
         correct = (preds.data == i).sum().item()
         accs.append(correct / preds.size(0))
 
