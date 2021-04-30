@@ -53,7 +53,7 @@ clsf = classifier.PrototypicalNet(in_features=opt.resSize, out_features=opt.resS
 if opt.fsl_directory is not None:
     model_path = os.path.join(
         opt.fsl_directory,
-        f'fsl_{data.benchmark.lower()}_proposed_splits_'
+        f'fsl_{data.benchmark.lower()}_features_proposed_splits_'
         f'train{"" if opt.validation else "val"}'
         f'{"_generalized" if opt.gzsl else ""}.pt'
     )
