@@ -434,7 +434,7 @@ for epoch in range(0,opt.nepoch):
         netF=netF,
         netDec=netDec,
     )
-    syn_label = torch.tensor([data.eval_label_mapping[label] for label in syn_label])
+    syn_label = torch.LongTensor([data.eval_label_mapping[label] for label in syn_label])
     support_labels = [data.eval_label_mapping[label] for label in support_labels]
     ##
 
