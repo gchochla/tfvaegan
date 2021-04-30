@@ -404,7 +404,7 @@ for epoch in range(0,opt.nepoch):
 
     print(
         ('[%d/%d]  Loss_D: %.4f, Loss_G: %.4f, '
-         'Wasserstein_dist:%.4f, vae_loss_seen:%.4f, clsf loss') %
+         'Wasserstein_dist: %.4f, vae_loss_seen: %.4f, clsf loss: %.4f') %
         (
             epoch,
             opt.nepoch,
