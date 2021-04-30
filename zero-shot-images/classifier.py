@@ -471,7 +471,7 @@ def eval_protonet(fsl_classifier, dataset, support, labels):
     dataset.eval()
 
     query, _, align_labels, n_seen = dataset()
-    query = [query[align_labels.index(label)] for label in labels]
+    query = [Variable(query[align_labels.index(label)]) for label in labels]
 
     logits = fsl_classifier(support, query)
 
