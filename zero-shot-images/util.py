@@ -406,8 +406,9 @@ class MatDataset:
         if self.training:
             rand_labels_inds = torch.randperm(len(self.train_label_mapping))[:way]
             # int64 so it doesn't get interpreted as bool
-            rand_labels = np.array(list(self.train_label_mapping),
-                                   dtype=np.int64)[rand_labels_inds]
+            rand_labels = torch.LongTensor(list(self.train_label_mapping))[
+                rand_labels_inds
+            ]
             attributes = self.attributes[rand_labels]
 
             labels = [self.train_label_mapping[lbl] for lbl in rand_labels]
@@ -439,7 +440,7 @@ class MatDataset:
         seen_classes = len(labels)
 
         labels.extend(unseen_labels)
-        attributes = self.attributes[np.array(labels)]
+        attributes = self.attributes[torch.LongTensor(labels)]
 
         query = []
 
