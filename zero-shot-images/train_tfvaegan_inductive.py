@@ -381,7 +381,7 @@ for epoch in range(0,opt.nepoch):
                 recon_x = netG(z, c=input_attv)
 
             support = [recon_x[i:i+shot] for i in range(0, recon_x.size(0), shot)]
-            query = [input_attv[i:i+queries] for i in range(0, input_attv.size(0), queries)]
+            query = [input_resv[i:i+queries] for i in range(0, input_resv.size(0), queries)]
             logits = clsf(support, query)
             clsf_cost = clsf_loss(logits)
             ##
