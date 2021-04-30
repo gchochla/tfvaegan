@@ -447,7 +447,7 @@ class PrototypicalNet(nn.Module):
 
         return logits
 
-def eval_protonet(fsl_classifier, dataset, support, labels):
+def eval_protonet(fsl_classifier, dataset, support, labels, cuda):
     """Return ZSL or GZSL metrics of Z2FSL.
 
     Args:
@@ -457,6 +457,7 @@ def eval_protonet(fsl_classifier, dataset, support, labels):
         support (`list` of `torch.Tensor`s): support set.
         labels (`iterable` of `int`s): corresponding labels, one
             for each element in `support`.
+        cuda (`bool`): whether on CUDA.
 
     Returns:
         If ZSL:
@@ -472,6 +473,8 @@ def eval_protonet(fsl_classifier, dataset, support, labels):
 
     query, _, align_labels, n_seen = dataset()
     query = [Variable(query[align_labels.index(label)]) for label in labels]
+    if cuda:
+        query = [cls_query.cuda() for cls_query in query]
 
     logits = fsl_classifier(support, query)
 
