@@ -73,6 +73,7 @@ input_res = torch.FloatTensor(opt.batch_size, opt.resSize)
 input_att = torch.FloatTensor(opt.batch_size, opt.attSize)
 input_att_shot = torch.FloatTensor(opt.batch_size // queries * shot, opt.attSize) #attSize class-embedding size
 noise = torch.FloatTensor(opt.batch_size, opt.nz)
+noise_shot = torch.FloatTensor(opt.batch_size // queries * shot, opt.nz)
 one = torch.FloatTensor([1])
 mone = one * -1
 ##########
@@ -85,8 +86,10 @@ if opt.cuda:
     netDec.cuda()
     clsf.cuda()
     input_res = input_res.cuda()
-    noise, input_att = noise.cuda(), input_att.cuda()
+    input_att = input_att.cuda()
     input_att_shot = input_att_shot.cuda()
+    noise = noise.cuda()
+    noise_shot = noise_shot.cuda()
     one = one.cuda()
     mone = mone.cuda()
 
@@ -301,8 +304,16 @@ for epoch in range(0,opt.nepoch):
             ## NEW: classifier finetuning
             if opt.classifier_lr > 0:
                 clsf.zero_grad()
-                noise.normal_(0, 1)
-                z = Variable(noise)
+                if opt.encoded_noise:  # <--- Use VAE
+                    means, log_var = netE(input_resv, input_attv)
+                    std = torch.exp(0.5 * log_var)
+                    eps = torch.randn([opt.batch_size, opt.latent_size]).cpu()
+                    eps = Variable(eps.cuda())
+                    z = eps * std + means #torch.Size([64, 312])
+                else:
+                    input_attv = Variable(input_att_shot)
+                    noise_shot.normal_(0, 1)
+                    z = Variable(noise_shot)
 
                 if loop >= 1:
                     recon_x = netG(z, c=input_attv)
@@ -324,7 +335,8 @@ for epoch in range(0,opt.nepoch):
             ############# Generator training ##############
             sample()
             input_resv = Variable(input_res)
-            input_attv = Variable(input_att_shot)
+            input_attv = Variable(input_att)
+            input_att_shotv = Variable(input_att_shot)
             # Train Generator and Decoder
             for p in netD.parameters(): #freeze discriminator
                 p.requires_grad = False
@@ -360,24 +372,24 @@ for epoch in range(0,opt.nepoch):
                 criticG_fake = netD(recon_x,input_attv).mean()
                 fake = recon_x
             else:
-                noise.normal_(0, 1)
-                noisev = Variable(noise)
+                noise_shot.normal_(0, 1)
+                z = Variable(noise_shot)
                 if loop >= 1:
-                    fake = netG(noisev, c=input_attv)
+                    fake = netG(z, c=input_att_shotv)
                     dec_out = netDec(recon_x) #Feedback from Decoder encoded output
                     dec_hidden_feat = netDec.getLayersOutDet()
                     feedback_out = netF(dec_hidden_feat)
-                    fake = netG(noisev, a1=opt.a1, c=input_attv, feedback_layers=feedback_out)
+                    fake = netG(z, a1=opt.a1, c=input_att_shotv, feedback_layers=feedback_out)
                 else:
-                    fake = netG(noisev, c=input_attv)
-                criticG_fake = netD(fake,input_attv).mean()
+                    fake = netG(z, c=input_att_shotv)
+                criticG_fake = netD(fake,input_att_shotv).mean()
 
             ## NEW: classifier loss backprop to gen etc
-            noise.normal_(0, 1)
-            z = Variable(noise)
+            noise_shot.normal_(0, 1)
+            z = Variable(noise_shot)
 
             if loop >= 1:
-                recon_x = netG(z, c=input_attv)
+                recon_x = netG(z, c=input_att_shotv)
                 dec_out = netDec(recon_x)
                 dec_hidden_feat = netDec.getLayersOutDet()
                 feedback_out = netF(dec_hidden_feat)
@@ -395,7 +407,10 @@ for epoch in range(0,opt.nepoch):
             errG += opt.gammaG*G_cost
             netDec.zero_grad()
             recons_fake = netDec(fake)
-            R_cost = WeightedL1(recons_fake, input_attv)
+            if opt.encoded_noise:
+                R_cost = WeightedL1(recons_fake, input_attv)
+            else:
+                R_cost = WeightedL1(recons_fake, input_att_shotv)
             errG += opt.recons_weight * R_cost
             errG += opt.clsf_weight * clsf_cost
             errG.backward()
