@@ -86,6 +86,7 @@ if opt.cuda:
     clsf.cuda()
     input_res = input_res.cuda()
     noise, input_att = noise.cuda(), input_att.cuda()
+    input_att_shot = input_att_shot.cuda()
     one = one.cuda()
     mone = mone.cuda()
 
