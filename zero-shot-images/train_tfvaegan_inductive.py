@@ -395,7 +395,7 @@ for epoch in range(0,opt.nepoch):
                 feedback_out = netF(dec_hidden_feat)
                 recon_x = netG(z, a1=opt.a1, c=input_attv, feedback_layers=feedback_out)
             else:
-                recon_x = netG(z, c=input_attv)
+                recon_x = netG(z, c=input_att_shotv)
 
             support = [recon_x[i:i+shot] for i in range(0, recon_x.size(0), shot)]
             query = [input_resv[i:i+queries] for i in range(0, input_resv.size(0), queries)]
