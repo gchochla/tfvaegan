@@ -376,7 +376,9 @@ for epoch in range(0,opt.nepoch):
                 z = Variable(noise_shot)
                 if loop >= 1:
                     fake = netG(z, c=input_att_shotv)
-                    dec_out = netDec(recon_x) #Feedback from Decoder encoded output
+                    # NOTE: changed from feedback from VAE features
+                    # to mere generator features
+                    dec_out = netDec(fake)
                     dec_hidden_feat = netDec.getLayersOutDet()
                     feedback_out = netF(dec_hidden_feat)
                     fake = netG(z, a1=opt.a1, c=input_att_shotv, feedback_layers=feedback_out)
