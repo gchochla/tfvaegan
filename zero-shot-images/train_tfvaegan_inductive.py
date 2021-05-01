@@ -70,7 +70,8 @@ print(clsf)
 ###########
 # Init Tensors
 input_res = torch.FloatTensor(opt.batch_size, opt.resSize)
-input_att = torch.FloatTensor(opt.batch_size // queries * shot, opt.attSize) #attSize class-embedding size
+input_att = torch.FloatTensor(opt.batch_size, opt.attSize)
+input_att_shot = torch.FloatTensor(opt.batch_size // queries * shot, opt.attSize) #attSize class-embedding size
 noise = torch.FloatTensor(opt.batch_size, opt.nz)
 one = torch.FloatTensor([1])
 mone = one * -1
@@ -145,9 +146,10 @@ def sample():
     ## BEFORE
     # batch_feature, batch_att = data.next_seen_batch(opt.batch_size)
     ## AFTER
-    batch_feature, batch_att, *_ = data(opt.batch_size // queries, queries)
+    batch_feature, batch_att_single, *_ = data(opt.batch_size // queries, queries)
     batch_feature = torch.cat(batch_feature)
-    batch_att = util.tensor_interleave(batch_att, shot)
+    batch_att = util.tensor_interleave(batch_att_single, queries)
+    input_att_shot.copy_(util.tensor_interleave(batch_att_single, shot))
     ##
     input_res.copy_(batch_feature)
     input_att.copy_(batch_att)
@@ -320,6 +322,8 @@ for epoch in range(0,opt.nepoch):
 
             ############# Generator training ##############
             sample()
+            input_resv = Variable(input_res)
+            input_attv = Variable(input_att_shot)
             # Train Generator and Decoder
             for p in netD.parameters(): #freeze discriminator
                 p.requires_grad = False
@@ -331,8 +335,7 @@ for epoch in range(0,opt.nepoch):
             netG.zero_grad()
             netF.zero_grad()
             clsf.zero_grad()
-            input_resv = Variable(input_res)
-            input_attv = Variable(input_att)
+
             # encoder
             means, log_var = netE(input_resv, input_attv)
             std = torch.exp(0.5 * log_var)
