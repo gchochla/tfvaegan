@@ -428,7 +428,7 @@ for epoch in range(0,opt.nepoch):
         ('[%d/%d]  Loss_D: %.4f, Loss_G: %.4f, '
          'Wasserstein_dist: %.4f, vae_loss_seen: %.4f, clsf loss: %.4f,') %
         (
-            epoch,
+            epoch + 1,
             opt.nepoch,
             D_cost.data[0],
             G_cost.data[0],
