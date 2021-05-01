@@ -395,7 +395,7 @@ for epoch in range(0,opt.nepoch):
                 dec_out = netDec(recon_x)
                 dec_hidden_feat = netDec.getLayersOutDet()
                 feedback_out = netF(dec_hidden_feat)
-                recon_x = netG(z, a1=opt.a1, c=input_attv, feedback_layers=feedback_out)
+                recon_x = netG(z, a1=opt.a1, c=input_att_shotv, feedback_layers=feedback_out)
             else:
                 recon_x = netG(z, c=input_att_shotv)
 
