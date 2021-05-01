@@ -488,13 +488,13 @@ for epoch in range(0,opt.nepoch):
         if acc > best_gzsl_acc:
             best_gzsl_acc, best_acc_seen, best_acc_unseen = acc, acc_s, acc_u
             best_epoch = epoch
-        print(' s=%.4f, u=%.4f, H=%.4f' % (acc_s * 100, acc_u * 100, acc * 100))
+        print('s=%.4f, u=%.4f, H=%.4f' % (acc_s * 100, acc_u * 100, acc * 100))
     else:
         acc = classifier.eval_protonet(clsf, data, support, support_labels, opt.cuda)
         if acc > best_zsl_acc:
             best_zsl_acc = acc
             best_epoch = epoch
-        print(' unseen accuracy=%.4f' % (acc * 100))
+        print('unseen accuracy=%.4f' % (acc * 100))
 
     netG.train()
     netDec.train()
@@ -503,11 +503,11 @@ for epoch in range(0,opt.nepoch):
 if opt.gzsl:
     print(
         f'Best GZSL results in {data.benchmark.upper()}: Epoch={best_epoch},'
-        ' H={best_gzsl_acc*100:.2f}% s={best_acc_seen*100:.2f}%'
-        ' u={best_acc_unseen*100:.2f}'
+        f' H={best_gzsl_acc*100:.2f}% s={best_acc_seen*100:.2f}%'
+        f' u={best_acc_unseen*100:.2f}'
     )
 else:
     print(
         f'Best ZSL results in {data.benchmark.upper()}: Epoch={best_epoch},'
-        ' Acc={best_zsl_acc*100:.2f}%'
+        f' Acc={best_zsl_acc*100:.2f}%'
     )
