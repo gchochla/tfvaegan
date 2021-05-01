@@ -70,7 +70,7 @@ print(clsf)
 ###########
 # Init Tensors
 input_res = torch.FloatTensor(opt.batch_size, opt.resSize)
-input_att = torch.FloatTensor(opt.batch_size, opt.attSize) #attSize class-embedding size
+input_att = torch.FloatTensor(opt.batch_size // queries * shot, opt.attSize) #attSize class-embedding size
 noise = torch.FloatTensor(opt.batch_size, opt.nz)
 one = torch.FloatTensor([1])
 mone = one * -1
@@ -147,7 +147,7 @@ def sample():
     ## AFTER
     batch_feature, batch_att, *_ = data(opt.batch_size // queries, queries)
     batch_feature = torch.cat(batch_feature)
-    batch_att = util.tensor_interleave(batch_att, queries)
+    batch_att = util.tensor_interleave(batch_att, shot)
     ##
     input_res.copy_(batch_feature)
     input_att.copy_(batch_att)
