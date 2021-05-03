@@ -575,7 +575,9 @@ def sanity_check(dataset_dir, benchmark):
     dataset = MatDataset(dataset_dir, benchmark)
     dist = classifier.PrototypicalNet.euclidean
     features = [
-        dataset.train_features[dataset.train_labels == i] for i in range(10)
+        torch.FloatTensor(
+            np.array(dataset.train_features)[dataset.train_labels == i]
+        ) for i in range(10)
         if any(dataset.train_labels == i)
     ]
     support = [feats[:len(feats)//2] for feats in features]
