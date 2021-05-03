@@ -1,11 +1,14 @@
 #import h5py
 import numpy as np
+from numpy.lib import utils
 import scipy.io as sio
 import torch
+from torch.autograd import Variable
 from sklearn import preprocessing
 import os
 import sys
 import pdb
+import classifier
 # import h5py
 
 def weights_init(m):
@@ -558,3 +561,30 @@ def tensor_interleave(tensor, times):
     for row in tensor:
         interleave.extend([row] * times)
     return torch.stack(interleave)
+
+
+def sanity_check(dataset_dir, benchmark):
+
+    def acc(logits):
+        accs = [
+            (np.argmax(cl.data, -1) == i).sum() / cl.data.size(0)
+            for i, cl in enumerate(logits)
+        ]
+        return sum(accs) / len(accs)
+
+    dataset = MatDataset(dataset_dir, benchmark)
+    dist = classifier.PrototypicalNet.euclidean
+    features = [
+        dataset.train_features[dataset.train_labels == i] for i in range(10)
+        if any(dataset.train_labels == i)
+    ]
+    support = [feats[:len(feats)//2] for feats in features]
+    query = [feats[len(feats)//2:] for feats in features]
+    prototypes = Variable(torch.stack([sup.mean(0) for sup in support]))
+    logits = [-dist(prototypes, Variable(que)) for que in query]
+    print(f'Direct features\' accuracy: {acc(logits)*100:.2f}%')
+
+    support, query, *_ = dataset.fsl_episode(10, 10, 10)
+    prototypes = Variable(torch.stack([sup.mean(0) for sup in support]))
+    logits = [-dist(prototypes, Variable(que)) for que in query]
+    print(f'Function feature\'s accuracy: {acc(logits)*100:.2f}')
