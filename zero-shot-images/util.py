@@ -563,7 +563,7 @@ def tensor_interleave(tensor, times):
     return torch.stack(interleave)
 
 
-def sanity_check(dataset_dir, benchmark):
+def sanity_check(**dataset_kwargs):
 
     def acc(logits):
         accs = [
@@ -572,7 +572,7 @@ def sanity_check(dataset_dir, benchmark):
         ]
         return sum(accs) / len(accs)
 
-    dataset = MatDataset(dataset_dir, benchmark)
+    dataset = MatDataset(**dataset_kwargs)
     dist = classifier.PrototypicalNet.euclidean
     features = [
         torch.FloatTensor(
