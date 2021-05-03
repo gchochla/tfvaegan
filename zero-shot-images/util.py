@@ -208,7 +208,7 @@ class MatDataset:
         else:
             attributes = matcontent['original_att'].T
 
-        self.attributes = torch.FloatTensor(attributes)
+        self.attributes = attributes
 
         ### get attributes ###
         ######################
@@ -268,9 +268,9 @@ class MatDataset:
                 eval_seen_features = mmscaler.transform(eval_seen_features)
                 eval_unseen_features = mmscaler.transform(eval_unseen_features)
 
-            self.train_features = torch.from_numpy(train_features)
-            self.eval_seen_features = torch.from_numpy(eval_seen_features)
-            self.eval_unseen_features = torch.from_numpy(eval_unseen_features)
+            self.train_features = train_features
+            self.eval_seen_features = eval_seen_features
+            self.eval_unseen_features = eval_unseen_features
 
             self.train_labels = train_labels
             self.eval_seen_labels = eval_seen_labels
@@ -292,8 +292,8 @@ class MatDataset:
                 train_features = mmscaler.fit_transform(train_features)
                 eval_unseen_features = mmscaler.transform(eval_unseen_features)
 
-            self.train_features = torch.from_numpy(train_features)
-            self.eval_features = torch.from_numpy(eval_unseen_features)
+            self.train_features = train_features
+            self.eval_features = eval_unseen_features
 
             train_labels = np.concatenate((train_labels, eval_seen_labels))
             self.train_labels = train_labels
@@ -365,27 +365,27 @@ class MatDataset:
 
         if self.training:
             lbl_ind = self.train_labels[index]
-            return (self.train_features[index],
+            return (torch.FloatTensor(self.train_features[index]),
                     self.train_label_mapping[lbl_ind],
-                    self.attributes[lbl_ind])
+                    torch.FloatTensor(self.attributes[lbl_ind]))
 
         if self.generalized:
             if index < len(self.eval_seen_features):
                 lbl_ind = self.eval_seen_labels[index]
-                return (self.eval_seen_features[index],
+                return (torch.FloatTensor(self.eval_seen_features[index]),
                         self.eval_label_mapping[lbl_ind],
-                        self.attributes[lbl_ind], False)
+                        torch.FloatTensor(self.attributes[lbl_ind]), False)
 
             index -= len(self.eval_seen_features)
             lbl_ind = self.eval_unseen_labels[index]
-            return (self.eval_unseen_features[index],
+            return (torch.FloatTensor(self.eval_unseen_features[index]),
                     self.eval_label_mapping[lbl_ind],
-                    self.attributes[lbl_ind], True)
+                    torch.FloatTensor(self.attributes[lbl_ind]), True)
 
         lbl_ind = self.eval_labels[index]
-        return (self.eval_features[index],
+        return (torch.FloatTensor(self.eval_features[index]),
                 self.eval_label_mapping[lbl_ind],
-                self.attributes[lbl_ind])
+                torch.FloatTensor(self.attributes[lbl_ind]))
 
     def __call__(self, way=None, queries_per=None):
         """Fetches a randomly sampled episode.
@@ -415,14 +415,16 @@ class MatDataset:
             rand_labels = torch.LongTensor(list(self.train_label_mapping))[
                 rand_labels_inds
             ]
-            attributes = self.attributes[rand_labels]
+            attributes = torch.FloatTensor(self.attributes[rand_labels])
 
             labels = [self.train_label_mapping[lbl] for lbl in rand_labels]
 
             for lbl in rand_labels:
                 inds = self.class_mapping[True][lbl]
                 rand_inds = np.random.permutation(len(inds))[:queries_per]
-                query.append(self.train_features[inds[rand_inds]])
+                query.append(
+                    torch.FloatTensor(self.train_features[inds[rand_inds]])
+                )
 
             return query, attributes, labels
 
@@ -446,7 +448,7 @@ class MatDataset:
         seen_classes = len(labels)
 
         labels.extend(unseen_labels)
-        attributes = self.attributes[torch.LongTensor(labels)]
+        attributes = torch.FloatTensor(self.attributes[labels])
 
         query = []
 
@@ -455,11 +457,17 @@ class MatDataset:
             rand_inds = np.random.permutation(len(inds))[:queries_per]
             if self.generalized:
                 if i < seen_classes:
-                    query.append(self.eval_seen_features[inds[rand_inds]])
+                    query.append(
+                        torch.FloatTensor(self.eval_seen_features[inds[rand_inds]])
+                    )
                 else:
-                    query.append(self.eval_unseen_features[inds[rand_inds]])
+                    query.append(
+                        torch.FloatTensor(self.eval_unseen_features[inds[rand_inds]])
+                    )
             else:
-                query.append(self.eval_features[inds[rand_inds]])
+                query.append(
+                    torch.FloatTensor(self.eval_features[inds[rand_inds]])
+                )
 
         labels = [self.eval_label_mapping[lbl] for lbl in labels]
 
