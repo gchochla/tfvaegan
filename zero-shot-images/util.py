@@ -589,4 +589,4 @@ def sanity_check(dataset_dir, benchmark):
     support, query, *_ = dataset.fsl_episode(10, 10, 10)
     prototypes = Variable(torch.stack([sup.mean(0) for sup in support]))
     logits = [-dist(prototypes, Variable(que)) for que in query]
-    print(f'Function feature\'s accuracy: {acc(logits)*100:.2f}')
+    print(f'Function feature\'s accuracy: {acc(logits)*100:.2f}%')
