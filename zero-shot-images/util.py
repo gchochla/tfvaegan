@@ -422,7 +422,7 @@ class MatDataset:
             for lbl in rand_labels:
                 inds = self.class_mapping[True][lbl]
                 rand_inds = torch.randperm(len(inds))[:queries_per]
-                query.append(self.train_features[rand_inds])
+                query.append(self.train_features[inds[rand_inds]])
 
             return query, attributes, labels
 
@@ -455,11 +455,11 @@ class MatDataset:
             rand_inds = torch.randperm(len(inds))[:queries_per]
             if self.generalized:
                 if i < seen_classes:
-                    query.append(self.eval_seen_features[rand_inds])
+                    query.append(self.eval_seen_features[inds[rand_inds]])
                 else:
-                    query.append(self.eval_unseen_features[rand_inds])
+                    query.append(self.eval_unseen_features[inds[rand_inds]])
             else:
-                query.append(self.eval_features[rand_inds])
+                query.append(self.eval_features[inds[rand_inds]])
 
         labels = [self.eval_label_mapping[lbl] for lbl in labels]
 
