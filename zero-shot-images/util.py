@@ -129,7 +129,7 @@ class MatDataset:
             to be used for evaluation of unseen classes accuracy. Only
             included if `generalized` is set to `True` at init.
         eval_features(torch.Tensor): row-wise ResNet101 features to be
-            used fot evaluation of accyracy. Only included if
+            used fot evaluation of accuracy. Only included if
             `generalized` is set to `False` at init.
         train_labels(numpy.ndarray): actual labels corresponding to
             `train_features`.
@@ -463,7 +463,7 @@ class MatDataset:
         return query, attributes, labels, seen_classes
 
     def _init_class_mapping(self):
-        """Proporly sets `class_mapping`."""
+        """Properly sets `class_mapping`."""
 
         self.class_mapping = {True: dict(), False: dict()}  # why bool? whether training
 
