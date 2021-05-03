@@ -421,14 +421,14 @@ class MatDataset:
 
             for lbl in rand_labels:
                 inds = self.class_mapping[True][lbl]
-                rand_inds = torch.randperm(len(inds))[:queries_per]
+                rand_inds = np.random.permutation(len(inds))[:queries_per]
                 query.append(self.train_features[inds[rand_inds]])
 
             return query, attributes, labels
 
         # if not training
 
-        rand_labels_inds = torch.randperm(len(self.eval_label_mapping))[:way]
+        rand_labels_inds = np.random.permutation(len(self.eval_label_mapping))[:way]
         rand_labels = np.array(list(self.eval_label_mapping),
                                dtype=np.int64)[rand_labels_inds]
         # order labels (seen then unseen)
@@ -452,7 +452,7 @@ class MatDataset:
 
         for i, lbl in enumerate(labels):
             inds = self.class_mapping[False][lbl]
-            rand_inds = torch.randperm(len(inds))[:queries_per]
+            rand_inds = np.random.permutation(len(inds))[:queries_per]
             if self.generalized:
                 if i < seen_classes:
                     query.append(self.eval_seen_features[inds[rand_inds]])
