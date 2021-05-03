@@ -451,7 +451,7 @@ for epoch in range(0,opt.nepoch):
     syn_feature, syn_label, support, support_labels = generate_syn_feature(
         netG,
         syn_label,  # need dataset labels to get attributes
-        data.attributes,
+        torch.FloatTensor(data.attributes),
         opt.syn_num,
         netF=netF,
         netDec=netDec,
