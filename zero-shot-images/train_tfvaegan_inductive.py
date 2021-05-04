@@ -523,12 +523,12 @@ for epoch in range(0,opt.nepoch):
 
 if opt.gzsl:
     print(
-        f'Best GZSL results in {data.benchmark.upper()}: Epoch={best_epoch},'
+        f'Best GZSL results in {data.benchmark.upper()}: Epoch={best_epoch+1},'
         f' H={best_gzsl_acc*100:.2f}% s={best_acc_seen*100:.2f}%'
         f' u={best_acc_unseen*100:.2f}'
     )
 else:
     print(
-        f'Best ZSL results in {data.benchmark.upper()}: Epoch={best_epoch},'
+        f'Best ZSL results in {data.benchmark.upper()}: Epoch={best_epoch+1},'
         f' Acc={best_zsl_acc*100:.2f}%'
     )
