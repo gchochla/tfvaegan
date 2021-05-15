@@ -462,10 +462,10 @@ class PrototypicalNet(nn.Module):
             main_z = mapper(main_tensor)
 
             extra_tensor = actf(
-                to_extra + from_extra[:, :to_extra.size(1), :to_extra.size(2)]
+                to_extra + from_extra[:, :to_extra.size(1)]
             )
             main_tensor = actf(
-                main_z + from_extra[:, to_extra.size(1):, to_extra.size(2):]
+                main_z + from_extra[:, to_extra.size(1):]
             )
 
             try:
