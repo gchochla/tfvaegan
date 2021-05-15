@@ -455,7 +455,7 @@ class PrototypicalNet(nn.Module):
         for layer, (m_from, m_to) in enumerate(
             zip(self.mapper_from_extra, self.mapper_to_extra)
         ):
-            mapper = self.mapper[3 * layer: 3 * (layer + 1)]
+            mapper = self.mapper.layers[3 * layer: 3 * (layer + 1)]
             from_extra = m_from(extra_tensor)
             to_extra = m_to(main_tensor)
             main_z = mapper[0](main_tensor)
