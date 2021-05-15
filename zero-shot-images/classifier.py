@@ -1,4 +1,5 @@
 #author: akshitac8
+from typing import no_type_check_decorator
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
@@ -229,6 +230,22 @@ class LINEAR_LOGSOFTMAX_CLASSIFIER(nn.Module):
         o = self.logic(self.fc(x))
         return o
 
+
+def init_fn(mod):
+    """Initializes linear layers "diagonally"
+    (concerning [:in_features, :in_features]).
+    Function to pass to .apply()."""
+    classname = mod.__class__.__name__
+    if classname.find('Linear') != -1:
+        init = torch.randn(mod.weight.size()) / 10
+        init[range(mod.in_features), range(mod.in_features)] = 1
+        mod.weight = nn.Parameter(init, requires_grad=True)
+        if mod.bias is not None:
+            mod.bias = nn.Parameter(
+                torch.zeros_like(mod.bias).data,
+                requires_grad=True
+            )
+
 class MLP(nn.Module):
     """Simple MLP.
 
@@ -278,7 +295,7 @@ class MLP(nn.Module):
 
         self.layers = nn.Sequential(*layers)
 
-    def forward(self, x):  # pylint: disable=arguments-differ
+    def forward(self, x):
         """Forward propagation.
 
         Args:
@@ -293,19 +310,6 @@ class MLP(nn.Module):
         """Sets weights of linear layers to approx I
         and biases to 0.
         """
-        def init_fn(mod):
-            """Function to pass to .apply()."""
-            classname = mod.__class__.__name__
-            if classname.find('Linear') != -1:
-                init = torch.randn(mod.weight.size()) / 10
-                init[range(mod.in_features), range(mod.in_features)] = 1
-                mod.weight = nn.Parameter(init, requires_grad=True)
-                if mod.bias is not None:
-                    mod.bias = nn.Parameter(
-                        torch.zeros_like(mod.bias).data,
-                        requires_grad=True
-                    )
-
         self.apply(init_fn)
 
 
@@ -323,15 +327,18 @@ class PrototypicalNet(nn.Module):
             queries[i] nad prototypes[j].
     """
 
-    def __init__(self, in_features=512, out_features=512, hidden_layers=None,
-                 dist='euclidean', init_diagonal=False):
+    def __init__(self, in_features, out_features, hidden_layers=None,
+                 dist='euclidean', init_diagonal=False, **extra_features):
         """Init.
 
         Args:
-            in_features(int): input features dimension,
-                default=`512`.
-            out_features(int): final output dimension,
-                default=`512`.
+            in_features(int): input features dimension.
+            out_features(int): final output dimension.
+            extra_features(int): extra feature dimension,
+                included for the model to be backwards
+                compatible with pretrained models without
+                extra features. DEfault is None, aka no extra
+                features.
             hidden_layers(list|None): number of neurons
                 in hidden layers, default is one hidden
                 layer with units same as input.
@@ -353,8 +360,39 @@ class PrototypicalNet(nn.Module):
 
         self.mapper = MLP(in_features, out_features, hidden_layers,
                           hidden_actf=nn.ReLU())
+
+        if extra_features:
+            extra_dim = extra_features['dim']
+            extra_layers = [extra_dim] + extra_features.get(
+                'hidden_layers', [extra_dim] * len(hidden_layers)
+            ) + [extra_features.get('out_dim', extra_dim)] 
+
+            self.mapper_from_extra = nn.ModuleList(
+                [
+                    nn.Linear(in_feats, out_feats + extra_out_feats)
+                    for in_feats, (out_feats, extra_out_feats) in zip(
+                        extra_layers[:-1], zip(
+                            hidden_layers + [out_features], extra_layers[1:]
+                        )
+                    )
+                ]
+            )
+            self.mapper_to_extra = nn.ModuleList(
+                [
+                    nn.Linear(in_feats, out_feats)
+                    for in_feats, out_feats in zip(
+                        [in_features] + hidden_layers, extra_layers[1:]
+                    )
+                ]
+            )
+        else:
+            self.mapper_from_extra = nn.Identity()
+            self.mapper_to_extra = nn.Identity()
+
         if init_diagonal:
             self.mapper.init_diagonal()
+            if extra_features:
+                self.mapper_from_extra.apply(init_fn)
 
         if isinstance(dist, str):
             self.dist = self.__getattribute__(dist)
@@ -410,7 +448,29 @@ class PrototypicalNet(nn.Module):
         # then the distance of the second query to all way class, etc
         return torch.norm(prototypes - queries, dim=1).view(n_queries, way)
 
-    def forward(self, support, query):  # pylint: disable=arguments-differ
+    def map(self, main_tensor, extra_tensor1, extra_tensor2):
+
+        extra_tensor = torch.cat((extra_tensor1, extra_tensor2), dim=1)
+
+        for layer, (m_from, m_to) in enumerate(
+            zip(self.mapper_from_extra, self.mapper_to_extra)
+        ):
+            mapper = self.mapper[3 * layer: 3 * (layer + 1)]
+            from_extra = m_from(extra_tensor)
+            to_extra = m_to(main_tensor)
+            main_z = mapper[0](main_tensor)
+
+            extra_tensor = mapper[1:](
+                to_extra + from_extra[:, :to_extra.size(1), :to_extra.size(2)]
+            )
+            main_tensor = mapper[1:](
+                main_z + from_extra[:, to_extra.size(1):, to_extra.size(2):]
+            )
+
+        return torch.cat((main_tensor, extra_tensor), dim=1)
+
+
+    def forward(self, support, query, netDec):
         """Episodic forward propagation.
 
         Computes prototypes given the support set of an episode
@@ -437,17 +497,23 @@ class PrototypicalNet(nn.Module):
         prototypes = []
         for class_features in support:
             # class_features are (shot, feature_dim)
-            prototypes.append(self.mapper(class_features).mean(dim=0))
+            feat1 = netDec(class_features)
+            feat2 = netDec.getLayersOutDec()
+            prototypes.append(self.map(class_features, feat1, feat2).mean(dim=0))
         prototypes = torch.stack(prototypes)
 
         logits = []
         for class_features in query:
             # class_features are (n_queries, feature_dim)
-            logits.append(-self.dist(prototypes, self.mapper(class_features)))
+            feat1 = netDec(class_features)
+            feat2 = netDec.getLayersOutDec()
+            logits.append(
+                -self.dist(prototypes, self.map(class_features, feat1, feat2))
+            )
 
         return logits
 
-def eval_protonet(fsl_classifier, dataset, support, labels, cuda):
+def eval_protonet(fsl_classifier, netDec, dataset, support, labels, cuda):
     """Return ZSL or GZSL metrics of Z2FSL.
 
     Args:
@@ -476,7 +542,7 @@ def eval_protonet(fsl_classifier, dataset, support, labels, cuda):
     if cuda:
         query = [cls_query.cuda() for cls_query in query]
 
-    logits = fsl_classifier(support, query)
+    logits = fsl_classifier(support, query, netDec)
 
     fsl_classifier.train()
     dataset.train()

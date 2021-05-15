@@ -49,7 +49,8 @@ netD = model.Discriminator_D1(opt)
 netF = model.Feedback(opt)
 netDec = model.AttDec(opt,opt.attSize)
 clsf = classifier.PrototypicalNet(in_features=opt.resSize, out_features=opt.resSize,
-                                  init_diagonal=True, hidden_layers=[opt.resSize] * opt.fsl_num_layers)
+                                  init_diagonal=True, hidden_layers=[opt.resSize] * opt.fsl_num_layers,
+                                  **{'dim': opt.attSize + 4096})
 if opt.fsl_directory is not None:
     model_path = os.path.join(
         opt.fsl_directory,
@@ -326,7 +327,7 @@ for epoch in range(0,opt.nepoch):
 
                 support = [recon_x[i:i+shot] for i in range(0, recon_x.size(0), shot)]
                 query = [input_resv[i:i+queries] for i in range(0, input_resv.size(0), queries)]
-                logits = clsf(support, query)
+                logits = clsf(support, query, netDec)
                 clsf_cost = clsf_loss(logits)
                 clsf_cost.backward()
                 optimizerClsf.step()
@@ -401,7 +402,7 @@ for epoch in range(0,opt.nepoch):
 
             support = [recon_x[i:i+shot] for i in range(0, recon_x.size(0), shot)]
             query = [input_resv[i:i+queries] for i in range(0, input_resv.size(0), queries)]
-            logits = clsf(support, query)
+            logits = clsf(support, query, netDec)
             clsf_cost = clsf_loss(logits)
             ##
 
@@ -505,13 +506,15 @@ for epoch in range(0,opt.nepoch):
         # train_Y = torch.cat((train_labels, syn_label))
         # nclass = data.n_classes
         # synthetic support right now
-        acc, acc_s, acc_u = classifier.eval_protonet(clsf, data, support, support_labels, opt.cuda)
+        acc, acc_s, acc_u = classifier.eval_protonet(
+            clsf, netDec, data, support, support_labels, opt.cuda
+        )
         if acc > best_gzsl_acc:
             best_gzsl_acc, best_acc_seen, best_acc_unseen = acc, acc_s, acc_u
             best_epoch = epoch
         print('s=%.4f, u=%.4f, H=%.4f' % (acc_s * 100, acc_u * 100, acc * 100))
     else:
-        acc = classifier.eval_protonet(clsf, data, support, support_labels, opt.cuda)
+        acc = classifier.eval_protonet(clsf, netDec, data, support, support_labels, opt.cuda)
         if acc > best_zsl_acc:
             best_zsl_acc = acc
             best_epoch = epoch
