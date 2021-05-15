@@ -455,17 +455,25 @@ class PrototypicalNet(nn.Module):
         for layer, (m_from, m_to) in enumerate(
             zip(self.mapper_from_extra, self.mapper_to_extra)
         ):
-            mapper = self.mapper.layers[3 * layer: 3 * (layer + 1)]
+            mapper = self.mapper.layers[3 * layer]
+            actf = self.mapper.layers[3 * layer + 1]
             from_extra = m_from(extra_tensor)
             to_extra = m_to(main_tensor)
-            main_z = mapper[0](main_tensor)
+            main_z = mapper(main_tensor)
 
-            extra_tensor = mapper[1:](
+            extra_tensor = actf(
                 to_extra + from_extra[:, :to_extra.size(1), :to_extra.size(2)]
             )
-            main_tensor = mapper[1:](
+            main_tensor = actf(
                 main_z + from_extra[:, to_extra.size(1):, to_extra.size(2):]
             )
+
+            try:
+                dropout = self.mapper.layers[3 * layer + 2]
+                main_tensor = dropout(main_tensor)
+                extra_tensor = dropout(extra_tensor)
+            except:
+                pass
 
         return torch.cat((main_tensor, extra_tensor), dim=1)
 
