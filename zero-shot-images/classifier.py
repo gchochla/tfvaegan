@@ -498,7 +498,7 @@ class PrototypicalNet(nn.Module):
         for class_features in support:
             # class_features are (shot, feature_dim)
             feat1 = netDec(class_features)
-            feat2 = netDec.getLayersOutDec()
+            feat2 = netDec.getLayersOutDet()
             prototypes.append(self.map(class_features, feat1, feat2).mean(dim=0))
         prototypes = torch.stack(prototypes)
 
@@ -506,7 +506,7 @@ class PrototypicalNet(nn.Module):
         for class_features in query:
             # class_features are (n_queries, feature_dim)
             feat1 = netDec(class_features)
-            feat2 = netDec.getLayersOutDec()
+            feat2 = netDec.getLayersOutDet()
             logits.append(
                 -self.dist(prototypes, self.map(class_features, feat1, feat2))
             )
